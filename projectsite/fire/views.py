@@ -20,25 +20,19 @@ class ChartView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+    
     def get_queryset(self, *args, **kwargs):
         pass
 
-def PieCountbySeverity(request):
-    query = """ 
-    SELECT severity_level, COUNT(*) as count 
-    FROM fire_incident 
-    GROUP BY severity_level 
-    """
+from django.db.models import Count
+
+def PieCountbySeverity(request): 
+    query = '''SELECT severity_level, COUNT(*) as count FROM fire_incident GROUP BY severity_level;''' 
     data = {}
-    with connection.cursor() as cursor:
+    with connection.cursor() as cursor: 
         cursor.execute(query)
         rows = cursor.fetchall()
-    if rows:
-        data = {severity: count for severity, count in rows}
-    else:
-        data = {}
-    return JsonResponse(data)
-
+        
 def LineCountbyMonth(request):
 
     current_year = datetime.now().year
@@ -66,39 +60,18 @@ def LineCountbyMonth(request):
     return JsonResponse(result_with_month_names)
 
 def MultilineIncidentTop3Country(request):
-    query = '''
-        SELECT
-            fl.country,
-            strftime('%m', fi.date_time) AS month, -- Extracts month as '01', '02', etc.
-            COUNT(fi.id) AS incident_count
-        FROM
-            fire_incident fi
-        JOIN
-            fire_locations fl ON fi.location_id = fl.id
-        WHERE
-            -- Filter for countries that are in the top 3 for the current year
-            fl.country IN (
-                SELECT
-                    fl_top.country
-                FROM
-                    fire_incident fi_top
-                JOIN
-                    fire_locations fl_top ON fi_top.location_id = fl_top.id
-                WHERE
-                    strftime('%Y', fi_top.date_time) = strftime('%Y', 'now') -- Filter for current year
-                GROUP BY
-                    fl_top.country
-                ORDER BY
-                    COUNT(fi_top.id) DESC -- Order by incident count descending
-                LIMIT 3 -- Get only the top 3 countries
-            )
-            -- Also filter the main query for the current year
-            AND strftime('%Y', fi.date_time) = strftime('%Y', 'now')
-        GROUP BY
-            fl.country, month -- Group by country and month to count incidents per month
-        ORDER BY
-            fl.country, month; -- Order results for consistency
-        '''
+    query ='''
+    SELECT fl.country,strftime('%m', fi.date_time) AS month,COUNT(fi.id) AS incident_count 
+    FROM fire_incident fi 
+    JOIN fire_locations fl ON fi.location_id = fl.id WHERE fl.country 
+    IN (SELECT fl_top.country FROM fire_incident fi_top 
+        JOIN fire_locations fl_top ON fi_top.location_id = fl_top.id 
+        WHERE strftime('%Y', fi_top.date_time) = strftime('%Y', 'now') 
+        GROUP BY fl_top.country 
+        ORDER BY COUNT(fi_top.id) DESC LIMIT 3 ) 
+        AND strftime('%Y', fi.date_time) = strftime('%Y', 'now') 
+        GROUP BY fl.country, month 
+        ORDER BY fl.country, month; '''
         
     with connection.cursor() as cursor:
         cursor.execute(query)
@@ -171,7 +144,9 @@ def map_station(request):
     for fs in fireStations:
         fs['latitude'] = float(fs['latitude'])
         fs['longitude'] = float(fs['longitude'])
+        
     fireStations_list = list(fireStations)
+    
     context = {
         'fireStations': fireStations_list,
     }
