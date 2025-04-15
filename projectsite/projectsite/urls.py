@@ -9,6 +9,8 @@ urlpatterns = [
     path('', HomePageView.as_view(), name='home'),
     path('dashboard_chart', ChartView.as_view(), name='dashboard_chart'),
     path('chart/', PieCountbySeverity, name='chart'),
+    path('linechart/', LineCountbyMonth, name='linechart'),
     path('multilineChart/', MultilineIncidentTop3Country, name='multilineChart'),
-    path('multipleBarChart/', multipleBarbySeverity, name='chart')
+    path('multipleBarChart/', multipleBarbySeverity, name='multipleBarChart'),
+    path('stations', view.map_stations, name='map-stations'),
 ]

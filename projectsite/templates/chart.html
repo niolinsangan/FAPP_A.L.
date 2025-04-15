@@ -647,7 +647,7 @@ new Chart(pieChart, {
         data: {
             datasets: [
                 {
-                    data: counts,
+                    data: severityCounts,
                     backgroundColor: ["#1d7af3", "#f3545d", "#fdaf4b"],
                     borderWidth: 0,
                 },
@@ -863,7 +863,7 @@ fetch("/linechart/")
 } // Assuming this closing brace belongs here based on indentation
 
 
-fetch("/multiBarChart/")
+fetch("/multipleBarChart/")
   .then(response => response.json())
   .then(result => {
     var severityLevels = Object.keys(result);
@@ -874,7 +874,6 @@ fetch("/multiBarChart/")
 
     // Extract months (assuming all severity levels have the same months)
     var months = severityLevels.length > 0 ? Object.keys(result[severityLevels[0]]) : [];
-    // var counts = Object.values(result); // Not directly used as is
 
     // Sort function to sort object keys by month
     function sortObjectKeys(obj) {
@@ -885,76 +884,74 @@ fetch("/multiBarChart/")
     if (severityLevels.length >= 1) {
       var s1Data = result[severityLevels[0]];
       var sortedKeys1 = sortObjectKeys(s1Data);
-      incidentCountMajor = sortedKeys1.map(key => s1Data[key]);
+      incidentCountMinor = sortedKeys1.map(key => s1Data[key]);
     }
     if (severityLevels.length >= 2) {
       var s2Data = result[severityLevels[1]];
       var sortedKeys2 = sortObjectKeys(s2Data);
-      incidentCountMinor = sortedKeys2.map(key => s2Data[key]);
+      incidentCountModerate = sortedKeys2.map(key => s2Data[key]);
     }
     if (severityLevels.length >= 3) {
       var s3Data = result[severityLevels[2]];
       var sortedKeys3 = sortObjectKeys(s3Data);
-      incidentCountModerate = sortedKeys3.map(key => s3Data[key]);
+      incidentCountMajor = sortedKeys3.map(key => s3Data[key]);
     }
-    // ... the rest of your Chart.js code will go here, using months and the incidentCount arrays
-  });
 
-  var multipleBarChart = document.getElementById("multipleBarChart").getContext("2d");
+    var multipleBarChart = document.getElementById("multipleBarChart").getContext("2d");
 
-  new Chart(multipleBarChart, {
-    type: "bar",
-    data: {
-      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-      datasets: [
-        {
-          label: "Minor Fire",
-          backgroundColor: "#59d05d",
-          borderColor: "#59d05d",
-          data: incidentCount_minor,
-        },
-        {
-          label: "Moderate Fire",
-          backgroundColor: "#fdaf4b",
-          borderColor: "#fdaf4b",
-          data: incidentCount_moderate,
-        },
-        {
-          label: "Major Fire",
-          backgroundColor: "#177dff",
-          borderColor: "#177dff",
-          data: incidentCount_major,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      legend: {
-        position: "bottom",
-      },
-      title: {
-        display: true,
-        text: "Fire Incidents by Severity Level",
-      },
-      tooltips: {
-        mode: "index",
-        intersect: false,
-      },
-      responsive: true,
-      scales: {
-        xAxes: [
+    new Chart(multipleBarChart, {
+      type: "bar",
+      data: {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+        datasets: [
           {
-            stacked: true,
+            label: "Minor Fire",
+            backgroundColor: "#59d05d",
+            borderColor: "#59d05d",
+            data: incidentCountMinor,
           },
-        ],
-        yAxes: [
           {
-            stacked: true,
+            label: "Moderate Fire",
+            backgroundColor: "#fdaf4b",
+            borderColor: "#fdaf4b",
+            data: incidentCountModerate,
+          },
+          {
+            label: "Major Fire",
+            backgroundColor: "#177dff",
+            borderColor: "#177dff",
+            data: incidentCountMajor,
           },
         ],
       },
-    },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        legend: {
+          position: "bottom",
+        },
+        title: {
+          display: true,
+          text: "Fire Incidents by Severity Level",
+        },
+        tooltips: {
+          mode: "index",
+          intersect: false,
+        },
+        scales: {
+          xAxes: [
+            {
+              stacked: true,
+            },
+          ],
+          yAxes: [
+            {
+              stacked: true,
+            },
+          ],
+        },
+      },
+    });
   }).catch((error) => console.error("Error:", error));
 
 loadChartData();
