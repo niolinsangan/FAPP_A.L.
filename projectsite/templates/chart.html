@@ -373,6 +373,8 @@ var myBubbleChart = new Chart(document.getElementById('bubbleChart'), {
         }
     }
 });
+
+
 {% comment %} 
 var myMultipleLineChart = new Chart(document.getElementById('multipleLineChart'), {
     type: 'line',
@@ -443,6 +445,8 @@ var myMultipleLineChart = new Chart(document.getElementById('multipleLineChart')
     }
 }); {% endcomment %}
 
+
+{% comment %} 
 var myMultipleBarChart = new Chart(document.getElementById('multipleBarChart'), {
     type: 'bar',
     data: {
@@ -494,7 +498,7 @@ var myMultipleBarChart = new Chart(document.getElementById('multipleBarChart'), 
             }]
         }
     }
-});
+}); {% endcomment %}
 
 // Chart with HTML Legends
 var ctx = document.getElementById('htmlLegendChart').getContext('2d');
@@ -857,6 +861,101 @@ fetch("/linechart/")
     }).catch(error => console.error("Error:", error));
 
 } // Assuming this closing brace belongs here based on indentation
+
+
+fetch("/multiBarChart/")
+  .then(response => response.json())
+  .then(result => {
+    var severityLevels = Object.keys(result);
+    // Extract incident counts for each severity level
+    var incidentCountMajor = [];
+    var incidentCountMinor = [];
+    var incidentCountModerate = [];
+
+    // Extract months (assuming all severity levels have the same months)
+    var months = severityLevels.length > 0 ? Object.keys(result[severityLevels[0]]) : [];
+    // var counts = Object.values(result); // Not directly used as is
+
+    // Sort function to sort object keys by month
+    function sortObjectKeys(obj) {
+      return Object.keys(obj).sort((a, b) => parseInt(a) - parseInt(b));
+    }
+
+    // Check if data for each severity level exists and extract incident counts
+    if (severityLevels.length >= 1) {
+      var s1Data = result[severityLevels[0]];
+      var sortedKeys1 = sortObjectKeys(s1Data);
+      incidentCountMajor = sortedKeys1.map(key => s1Data[key]);
+    }
+    if (severityLevels.length >= 2) {
+      var s2Data = result[severityLevels[1]];
+      var sortedKeys2 = sortObjectKeys(s2Data);
+      incidentCountMinor = sortedKeys2.map(key => s2Data[key]);
+    }
+    if (severityLevels.length >= 3) {
+      var s3Data = result[severityLevels[2]];
+      var sortedKeys3 = sortObjectKeys(s3Data);
+      incidentCountModerate = sortedKeys3.map(key => s3Data[key]);
+    }
+    // ... the rest of your Chart.js code will go here, using months and the incidentCount arrays
+  });
+
+  var multipleBarChart = document.getElementById("multipleBarChart").getContext("2d");
+
+  new Chart(multipleBarChart, {
+    type: "bar",
+    data: {
+      labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+      datasets: [
+        {
+          label: "Minor Fire",
+          backgroundColor: "#59d05d",
+          borderColor: "#59d05d",
+          data: incidentCount_minor,
+        },
+        {
+          label: "Moderate Fire",
+          backgroundColor: "#fdaf4b",
+          borderColor: "#fdaf4b",
+          data: incidentCount_moderate,
+        },
+        {
+          label: "Major Fire",
+          backgroundColor: "#177dff",
+          borderColor: "#177dff",
+          data: incidentCount_major,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      legend: {
+        position: "bottom",
+      },
+      title: {
+        display: true,
+        text: "Fire Incidents by Severity Level",
+      },
+      tooltips: {
+        mode: "index",
+        intersect: false,
+      },
+      responsive: true,
+      scales: {
+        xAxes: [
+          {
+            stacked: true,
+          },
+        ],
+        yAxes: [
+          {
+            stacked: true,
+          },
+        ],
+      },
+    },
+  }).catch((error) => console.error("Error:", error));
 
 loadChartData();
 // </script> // Assuming this is part of the original code            
